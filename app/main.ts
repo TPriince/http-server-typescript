@@ -33,8 +33,10 @@ const server = net.createServer((socket) => {
       const message = messageArray[messageArray.length - 1];
       console.log({ message });
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
-    } else {
+    } else if (userAgent) {
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
+    } else {
+      response = "HTTP/1.1 404 Not Found\r\n\r\n";
     }
 
     socket.write(response);
