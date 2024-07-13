@@ -22,11 +22,13 @@ const server = net.createServer((socket) => {
 
     console.log({ x: urlPath.split("/") });
 
+    const urlContent = urlPath.split("/")[1];
+
     let response = "";
 
-    if (!userAgent) {
+    if (!urlContent) {
       response = "HTTP/1.1 200 OK\r\n\r\n";
-    } else if (urlPath.split("/")[1] === "echo") {
+    } else if (urlContent === "echo") {
       const messageArray = urlPath.split("/");
       const message = messageArray[messageArray.length - 1];
       console.log({ message });
