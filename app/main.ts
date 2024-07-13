@@ -7,7 +7,7 @@ const server = net.createServer((socket) => {
     const entireData = data.toString().split(" ");
     const urlPath = entireData[1];
     const dynamicUrlArray = urlPath.split("/");
-    const dynamicUrl = dynamicUrlArray[2];
+    const dynamicUrl = dynamicUrlArray[dynamicUrlArray.length - 1];
 
     console.log({ dynamicUrl });
 
