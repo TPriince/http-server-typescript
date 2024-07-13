@@ -18,15 +18,15 @@ const server = net.createServer((socket) => {
       dynamicUrlArray[0] === "" &&
       dynamicUrlArray[1] === ""
     )
-      [(status = "200")];
+      status = "200 OK";
     else if (dynamicUrlArray.length === 3 && dynamicUrl !== "") {
-      status = "200";
+      status = "200 OK";
     } else {
-      status = "404";
+      status = "404 NOT FOUND";
     }
 
     socket.write(
-      `HTTP/1.1 ${status} OK\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
+      `HTTP/1.1 ${status}\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
     );
   });
 
