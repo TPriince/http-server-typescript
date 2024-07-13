@@ -1,34 +1,21 @@
 import * as net from "net";
 
 const server = net.createServer((socket) => {
-  socket.on("data", (data) => {
+  const readData = (data: Buffer) => {
     console.log(`Received data: ${data}`);
 
-    const entireData = data.toString().split(" ");
+    const entireData = data.toString().split("\r\n");
     const urlPath = entireData[1];
-    const dynamicUrlArray = urlPath.split("/");
-    const dynamicUrl = dynamicUrlArray[dynamicUrlArray.length - 1];
+    const userAgent = urlPath.split(" ").splice(1).join(" ");
 
-    // console.log({ dynamicUrlArray });
-
-    let status = "";
-
-    if (
-      dynamicUrlArray.length === 2 &&
-      dynamicUrlArray[0] === "" &&
-      dynamicUrlArray[1] === ""
-    )
-      status = "200 OK";
-    else if (dynamicUrlArray.length === 3 && dynamicUrl !== "") {
-      status = "200 OK";
-    } else {
-      status = "404 Not Found";
-    }
+    console.log({ userAgent });
 
     socket.write(
-      `HTTP/1.1 ${status}\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
+      `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`
     );
-  });
+  };
+
+  socket.on("data", readData);
 
   socket.on("close", () => {
     socket.end();
