@@ -6,21 +6,17 @@ const server = net.createServer((socket) => {
 
     let userAgent = "";
 
-    const entireData = data.toString().split("\r\n");
-    const entireDataTwo = data.toString().split(" ");
-    const urlPath = entireDataTwo[1];
+    const entireData = data.toString().split(" ");
+    const urlPath = entireData[1];
 
-    console.log({ entireDataTwo });
+    const entireDataTwo = data.toString().split("\r\n");
 
-    entireData.forEach((datum) => {
+    entireDataTwo.forEach((datum) => {
       if (datum.toLocaleLowerCase().includes("user-agent:")) {
-        console.log({ datum });
         const formattedText = datum.split(" ").slice(1).join("");
         userAgent = formattedText;
       }
     });
-
-    console.log({ x: urlPath.split("/") });
 
     const urlContent = urlPath.split("/")[1];
 
@@ -31,7 +27,6 @@ const server = net.createServer((socket) => {
     } else if (urlContent === "echo") {
       const messageArray = urlPath.split("/");
       const message = messageArray[messageArray.length - 1];
-      console.log({ message });
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
     } else if (userAgent) {
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
