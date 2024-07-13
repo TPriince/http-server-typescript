@@ -22,7 +22,7 @@ const server = net.createServer((socket) => {
     else if (dynamicUrlArray.length === 3 && dynamicUrl !== "") {
       status = "200 OK";
     } else {
-      status = "404 NOT FOUND";
+      status = "404 Not Found";
     }
 
     socket.write(
