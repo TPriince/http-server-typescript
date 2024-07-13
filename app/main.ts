@@ -4,16 +4,25 @@ const server = net.createServer((socket) => {
   const readData = (data: Buffer) => {
     console.log(`Received data: ${data}`);
 
+    let userAgent = "";
+
     const entireData = data.toString().split("\r\n");
-    const userAgentString = entireData[2];
-    const userAgent = userAgentString.split(" ").slice(1).join(" ");
-    // const userAgent = userAgentArray[1];
+    entireData.forEach((datum) => {
+      if (datum.includes("User-Agent:")) {
+        console.log({ datum });
+        const formattedText = datum.split(" ").slice(1).join("");
+        userAgent = formattedText;
+      }
+    });
+    // const userAgentString = entireData[1];
+    // const userAgent = userAgentString.split(" ").slice(1).join(" ");
+    // // const userAgent = userAgentArray[1];
 
-    console.log({ entireData });
+    // console.log({ entireData });
 
-    // console.log({ userAgentArray });
+    // // console.log({ userAgentArray });
 
-    console.log({ userAgent });
+    // console.log({ userAgent });
 
     socket.write(
       `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`
