@@ -5,9 +5,13 @@ const server = net.createServer((socket) => {
     console.log(`Received data: ${data}`);
 
     const entireData = data.toString().split("\r\n");
-    const urlPath = entireData[1];
-    const userAgentArray = urlPath.split(" ");
-    const userAgent = userAgentArray[1];
+    const userAgentString = entireData[1];
+    const userAgent = userAgentString.split(" ").slice(1).join(" ");
+    // const userAgent = userAgentArray[1];
+
+    console.log({ entireData });
+
+    // console.log({ userAgentArray });
 
     console.log({ userAgent });
 
