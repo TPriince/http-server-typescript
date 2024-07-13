@@ -12,7 +12,7 @@ const server = net.createServer((socket) => {
     console.log({ dynamicUrl });
 
     socket.write(
-      `HTTP/1.1 200 OK\r\n\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
+      `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
     );
   });
 
