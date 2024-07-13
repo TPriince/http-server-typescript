@@ -6,7 +6,8 @@ const server = net.createServer((socket) => {
 
     const entireData = data.toString().split("\r\n");
     const urlPath = entireData[1];
-    const userAgent = urlPath.split(" ").splice(1).join(" ");
+    const userAgentArray = urlPath.split(" ");
+    const userAgent = userAgentArray[1];
 
     console.log({ userAgent });
 
