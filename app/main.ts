@@ -9,10 +9,24 @@ const server = net.createServer((socket) => {
     const dynamicUrlArray = urlPath.split("/");
     const dynamicUrl = dynamicUrlArray[dynamicUrlArray.length - 1];
 
-    console.log({ dynamicUrl });
+    // console.log({ dynamicUrlArray });
+
+    let status = "";
+
+    if (
+      dynamicUrlArray.length === 2 &&
+      dynamicUrlArray[0] === "" &&
+      dynamicUrlArray[1] === ""
+    )
+      [(status = "200")];
+    else if (dynamicUrlArray.length === 3 && dynamicUrl !== "") {
+      status = "200";
+    } else {
+      status = "404";
+    }
 
     socket.write(
-      `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
+      `HTTP/1.1 ${status} OK\r\nContent-Type: text/plain\r\nContent-Length: ${dynamicUrl.length}\r\n\r\n${dynamicUrl}`
     );
   });
 
