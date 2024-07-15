@@ -1,6 +1,6 @@
 import * as net from "net";
 import process from "process";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 
 const server = net.createServer((socket) => {
   const setResponse = (data: Buffer, urlPath: string, userAgent: string) => {
@@ -42,13 +42,13 @@ const server = net.createServer((socket) => {
       try {
         const fileContent = readFileSync(filePath);
 
-        console.log({ fileContent });
+        console.log(fileContent);
+
+        console.log("ss");
         response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
       } catch (error) {
         response = "HTTP/1.1 404 Not Found\r\n\r\n";
       }
-
-      response = "HTTP/1.1 200 OK\r\n\r\n";
     } else {
       response = "HTTP/1.1 404 Not Found\r\n\r\n";
     }
