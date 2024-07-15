@@ -34,7 +34,7 @@ const server = net.createServer((socket) => {
 
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
     } else if (urlPathWithoutSlashes[1] === "files") {
-      const directory = process.argv[2];
+      const directory = process.argv[3];
       const filePath = directory + path;
 
       console.log({ filePath });
