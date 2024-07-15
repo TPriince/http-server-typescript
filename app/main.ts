@@ -44,7 +44,6 @@ const server = net.createServer((socket) => {
 
         console.log(fileContent);
 
-        console.log("ss");
         response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
       } catch (error) {
         response = "HTTP/1.1 404 Not Found\r\n\r\n";
