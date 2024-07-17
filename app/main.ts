@@ -1,9 +1,14 @@
 import * as net from "net";
 import process from "process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const server = net.createServer((socket) => {
-  const setResponse = (data: Buffer, urlPath: string, userAgent: string) => {
+  const setResponse = (
+    method: string,
+    data: Buffer,
+    urlPath: string,
+    userAgent: string
+  ) => {
     const urlPathWithoutSlashes = urlPath.split("/");
     const length = urlPathWithoutSlashes.length;
     const path = urlPathWithoutSlashes[length - 1];
@@ -40,11 +45,19 @@ const server = net.createServer((socket) => {
       console.log({ filePath });
 
       try {
-        const fileContent = readFileSync(filePath);
+        if (method === "GET") {
+          const fileContent = readFileSync(filePath);
 
-        console.log(fileContent);
+          response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
+        } else if (method === "POST") {
+          const entireDataTwo = data.toString().split("\r\n");
+          const length = entireDataTwo.length;
+          const fileContent = entireDataTwo[length - 1];
 
-        response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
+          writeFileSync(filePath, fileContent);
+
+          response = `HTTP/1.1 201 Created\r\n\r\n`;
+        }
       } catch (error) {
         response = "HTTP/1.1 404 Not Found\r\n\r\n";
       }
@@ -59,15 +72,16 @@ const server = net.createServer((socket) => {
     console.log(`Received data: ${data}`);
 
     const entireData = data.toString().split(" ");
+    const method = entireData[0];
     const urlPath = entireData[1];
 
-    // console.log({ urlPath });
+    console.log({ entireData });
 
     let userAgent = "";
 
     let response = ``;
 
-    setResponse(data, urlPath, userAgent);
+    setResponse(method, data, urlPath, userAgent);
   };
 
   const close = () => {
