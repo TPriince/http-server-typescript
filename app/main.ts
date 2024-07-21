@@ -38,6 +38,7 @@ const server = net.createServer((socket) => {
         const zipped = zlib.gzipSync(buffer);
 
         response = `HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: ${zipped.length}\r\n\r\n${zipped}`;
+        socket.write(response);
         socket.write(zipped);
         return;
       } else {
