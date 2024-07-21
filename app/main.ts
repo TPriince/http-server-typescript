@@ -4,34 +4,37 @@ import { readFileSync, writeFileSync } from "node:fs";
 import * as zlib from "node:zlib";
 
 const server = net.createServer((socket) => {
+  // Function to set the HTTP response based on the request method, data, and URL path
   const setResponse = (method: string, data: Buffer, urlPath: string) => {
+    // Split the URL path to get the last segment and main path without slashes
     const urlPathWithoutSlashes = urlPath.split("/");
     const length = urlPathWithoutSlashes.length;
     const path = urlPathWithoutSlashes[length - 1];
     const urlContent = urlPath.split("/")[1];
 
-    // console.log({ path });
-    // console.log({ urlPathWithoutSlashes });
-
     let response = "";
 
+    // Handle root URL
     if (urlPath === "/") {
       response = "HTTP/1.1 200 OK\r\n\r\n";
-    } else if (urlContent === "echo") {
+    }
+    // Handle echo path
+    else if (urlContent === "echo") {
       const entireDataTwo = data.toString().split("\r\n");
 
       let encodingExtensions = "";
 
       const messageArray = urlPath.split("/");
-      console.log({ messageArray });
       const message = messageArray[messageArray.length - 1];
 
+      // Check for Accept-Encoding header
       entireDataTwo.forEach((datum) => {
         if (datum.toLocaleLowerCase().includes("accept-encoding:")) {
           encodingExtensions = datum;
         }
       });
 
+      // If gzip is accepted, gzip the message
       if (encodingExtensions.includes("gzip")) {
         const buffer = Buffer.from(message, "utf8");
         const zipped = zlib.gzipSync(buffer);
@@ -40,16 +43,19 @@ const server = net.createServer((socket) => {
         socket.write(response);
         socket.write(zipped);
         return;
-      } else {
+      }
+      // Otherwise, send the message in plain text
+      else {
         response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
       }
-    } else if (urlPathWithoutSlashes[1] === "user-agent") {
+    }
+    // Handle user-agent path
+    else if (urlPathWithoutSlashes[1] === "user-agent") {
       let userAgent = "";
 
       const entireDataTwo = data.toString().split("\r\n");
 
-      // console.log({ entireDataTwo });
-
+      // Extract the User-Agent header
       entireDataTwo.forEach((datum) => {
         if (datum.toLocaleLowerCase().includes("user-agent:")) {
           const formattedText = datum.split(" ").slice(1).join("");
@@ -57,20 +63,21 @@ const server = net.createServer((socket) => {
         }
       });
 
-      console.log({ userAgent });
-
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
-    } else if (urlPathWithoutSlashes[1] === "files") {
+    }
+    // Handle files path
+    else if (urlPathWithoutSlashes[1] === "files") {
       const directory = process.argv[3];
       const filePath = directory + path;
 
-      console.log({ filePath });
-
       try {
+        // Handle GET request to read a file
         if (method === "GET") {
           const fileContent = readFileSync(filePath);
           response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
-        } else if (method === "POST") {
+        }
+        // Handle POST request to write a file
+        else if (method === "POST") {
           const entireDataTwo = data.toString().split("\r\n");
           const length = entireDataTwo.length;
           const fileContent = entireDataTwo[length - 1];
@@ -80,31 +87,34 @@ const server = net.createServer((socket) => {
       } catch (error) {
         response = "HTTP/1.1 404 Not Found\r\n\r\n";
       }
-    } else {
+    }
+    // Handle unknown paths
+    else {
       response = "HTTP/1.1 404 Not Found\r\n\r\n";
     }
 
     socket.write(response);
   };
 
+  // Function to read and process incoming data
   const readData = (data: Buffer) => {
     console.log(`Received data: ${data}`);
 
+    // Split the data to get the HTTP method and URL path
     const entireData = data.toString().split(" ");
     const method = entireData[0];
     const urlPath = entireData[1];
 
-    // console.log({ entireData });
-
     setResponse(method, data, urlPath);
   };
 
+  // Function to close the socket
   const close = () => {
     socket.end();
   };
 
+  // Set up event handlers for data and close events
   socket.on("data", readData);
-
   socket.on("close", close);
 });
 
