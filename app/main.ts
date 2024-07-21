@@ -28,7 +28,6 @@ const server = net.createServer((socket) => {
 
       entireDataTwo.forEach((datum) => {
         if (datum.toLocaleLowerCase().includes("accept-encoding:")) {
-          console.log({ datum });
           encodingExtensions = datum;
         }
       });
@@ -37,7 +36,7 @@ const server = net.createServer((socket) => {
         const buffer = Buffer.from(message, "utf8");
         const zipped = zlib.gzipSync(buffer);
 
-        response = `HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: ${zipped.length}\r\n\r\n${zipped}`;
+        response = `HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: ${zipped.length}\r\n\r\n`;
         socket.write(response);
         socket.write(zipped);
         return;
