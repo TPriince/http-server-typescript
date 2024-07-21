@@ -9,11 +9,8 @@ const server = net.createServer((socket) => {
     const path = urlPathWithoutSlashes[length - 1];
     const urlContent = urlPath.split("/")[1];
 
-    let userAgent = "";
-    let encoding = "";
-
-    console.log({ path });
-    console.log({ urlPathWithoutSlashes });
+    // console.log({ path });
+    // console.log({ urlPathWithoutSlashes });
 
     let response = "";
 
@@ -22,17 +19,16 @@ const server = net.createServer((socket) => {
     } else if (urlContent === "echo") {
       const entireDataTwo = data.toString().split("\r\n");
 
-      let encodingExtension = "";
+      let encodingExtensions = "";
 
       entireDataTwo.forEach((datum) => {
         if (datum.toLocaleLowerCase().includes("accept-encoding:")) {
           console.log({ datum });
-          encodingExtension = datum.split(" ")[1];
-          console.log({ encodingExtension });
+          encodingExtensions = datum;
         }
       });
 
-      if (encodingExtension === "gzip") {
+      if (encodingExtensions.includes("gzip")) {
         response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\n\r\n`;
       } else {
         // response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n`;
@@ -42,6 +38,8 @@ const server = net.createServer((socket) => {
         response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
       }
     } else if (urlPathWithoutSlashes[1] === "user-agent") {
+      let userAgent = "";
+
       const entireDataTwo = data.toString().split("\r\n");
 
       // console.log({ entireDataTwo });
@@ -93,7 +91,7 @@ const server = net.createServer((socket) => {
     const method = entireData[0];
     const urlPath = entireData[1];
 
-    console.log({ entireData });
+    // console.log({ entireData });
 
     setResponse(method, data, urlPath);
   };
