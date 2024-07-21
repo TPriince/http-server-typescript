@@ -3,16 +3,14 @@ import process from "process";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const server = net.createServer((socket) => {
-  const setResponse = (
-    method: string,
-    data: Buffer,
-    urlPath: string,
-    userAgent: string
-  ) => {
+  const setResponse = (method: string, data: Buffer, urlPath: string) => {
     const urlPathWithoutSlashes = urlPath.split("/");
     const length = urlPathWithoutSlashes.length;
     const path = urlPathWithoutSlashes[length - 1];
     const urlContent = urlPath.split("/")[1];
+
+    let userAgent = "";
+    let encoding = "";
 
     console.log({ path });
     console.log({ urlPathWithoutSlashes });
@@ -22,9 +20,27 @@ const server = net.createServer((socket) => {
     if (urlPath === "/") {
       response = "HTTP/1.1 200 OK\r\n\r\n";
     } else if (urlContent === "echo") {
-      const messageArray = urlPath.split("/");
-      const message = messageArray[messageArray.length - 1];
-      response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
+      const entireDataTwo = data.toString().split("\r\n");
+
+      let encodingExtension = "";
+
+      entireDataTwo.forEach((datum) => {
+        if (datum.toLocaleLowerCase().includes("accept-encoding:")) {
+          console.log({ datum });
+          encodingExtension = datum.split(" ")[1];
+          console.log({ encodingExtension });
+        }
+      });
+
+      if (encodingExtension === "gzip") {
+        response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\n\r\n`;
+      } else {
+        // response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n`;
+        const messageArray = urlPath.split("/");
+        console.log({ messageArray });
+        const message = messageArray[messageArray.length - 1];
+        response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
+      }
     } else if (urlPathWithoutSlashes[1] === "user-agent") {
       const entireDataTwo = data.toString().split("\r\n");
 
@@ -36,6 +52,8 @@ const server = net.createServer((socket) => {
           userAgent = formattedText;
         }
       });
+
+      console.log({ userAgent });
 
       response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${userAgent.length}\r\n\r\n${userAgent}`;
     } else if (urlPathWithoutSlashes[1] === "files") {
@@ -77,11 +95,7 @@ const server = net.createServer((socket) => {
 
     console.log({ entireData });
 
-    let userAgent = "";
-
-    let response = ``;
-
-    setResponse(method, data, urlPath, userAgent);
+    setResponse(method, data, urlPath);
   };
 
   const close = () => {
