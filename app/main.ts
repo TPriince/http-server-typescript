@@ -1,7 +1,7 @@
 import * as net from "net";
 import process from "process";
-import { readFile, writeFile } from "node:fs";
-import * as zlib from "zlib";
+import { readFileSync, writeFileSync } from "node:fs";
+import * as zlib from "node:zlib";
 
 const server = net.createServer((socket) => {
   const setResponse = (method: string, data: Buffer, urlPath: string) => {
@@ -66,26 +66,19 @@ const server = net.createServer((socket) => {
 
       console.log({ filePath });
 
-      if (method === "GET") {
-        readFile(filePath, "utf-8", (error, data) => {
-          if (error) {
-            response = "HTTP/1.1 404 Not Found\r\n\r\n";
-          } else {
-            response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${data.length}\r\n\r\n${data}`;
-          }
-        });
-      } else if (method === "POST") {
-        const entireDataTwo = data.toString().split("\r\n");
-        const length = entireDataTwo.length;
-        const fileContent = entireDataTwo[length - 1];
-
-        writeFile(filePath, fileContent, (error) => {
-          if (error) {
-            response = "HTTP/1.1 404 Not Found\r\n\r\n";
-          } else {
-            response = `HTTP/1.1 201 Created\r\n\r\n`;
-          }
-        });
+      try {
+        if (method === "GET") {
+          const fileContent = readFileSync(filePath);
+          response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
+        } else if (method === "POST") {
+          const entireDataTwo = data.toString().split("\r\n");
+          const length = entireDataTwo.length;
+          const fileContent = entireDataTwo[length - 1];
+          writeFileSync(filePath, fileContent);
+          response = `HTTP/1.1 201 Created\r\n\r\n`;
+        }
+      } catch (error) {
+        response = "HTTP/1.1 404 Not Found\r\n\r\n";
       }
     } else {
       response = "HTTP/1.1 404 Not Found\r\n\r\n";
