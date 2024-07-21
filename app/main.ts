@@ -1,6 +1,7 @@
 import * as net from "net";
 import process from "process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFile, writeFile } from "node:fs";
+import * as zlib from "zlib";
 
 const server = net.createServer((socket) => {
   const setResponse = (method: string, data: Buffer, urlPath: string) => {
@@ -21,6 +22,10 @@ const server = net.createServer((socket) => {
 
       let encodingExtensions = "";
 
+      const messageArray = urlPath.split("/");
+      console.log({ messageArray });
+      const message = messageArray[messageArray.length - 1];
+
       entireDataTwo.forEach((datum) => {
         if (datum.toLocaleLowerCase().includes("accept-encoding:")) {
           console.log({ datum });
@@ -29,12 +34,11 @@ const server = net.createServer((socket) => {
       });
 
       if (encodingExtensions.includes("gzip")) {
-        response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\n\r\n`;
+        const buffer = Buffer.from(message, "utf8");
+        const zipped = zlib.gzipSync(buffer);
+
+        response = `HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Type: text/plain\r\nContent-Length: ${zipped.length}\r\n\r\n${message}`;
       } else {
-        // response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n`;
-        const messageArray = urlPath.split("/");
-        console.log({ messageArray });
-        const message = messageArray[messageArray.length - 1];
         response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${message.length}\r\n\r\n${message}`;
       }
     } else if (urlPathWithoutSlashes[1] === "user-agent") {
@@ -60,22 +64,26 @@ const server = net.createServer((socket) => {
 
       console.log({ filePath });
 
-      try {
-        if (method === "GET") {
-          const fileContent = readFileSync(filePath);
+      if (method === "GET") {
+        readFile(filePath, "utf-8", (error, data) => {
+          if (error) {
+            response = "HTTP/1.1 404 Not Found\r\n\r\n";
+          } else {
+            response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${data.length}\r\n\r\n${data}`;
+          }
+        });
+      } else if (method === "POST") {
+        const entireDataTwo = data.toString().split("\r\n");
+        const length = entireDataTwo.length;
+        const fileContent = entireDataTwo[length - 1];
 
-          response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContent.length}\r\n\r\n${fileContent}`;
-        } else if (method === "POST") {
-          const entireDataTwo = data.toString().split("\r\n");
-          const length = entireDataTwo.length;
-          const fileContent = entireDataTwo[length - 1];
-
-          writeFileSync(filePath, fileContent);
-
-          response = `HTTP/1.1 201 Created\r\n\r\n`;
-        }
-      } catch (error) {
-        response = "HTTP/1.1 404 Not Found\r\n\r\n";
+        writeFile(filePath, fileContent, (error) => {
+          if (error) {
+            response = "HTTP/1.1 404 Not Found\r\n\r\n";
+          } else {
+            response = `HTTP/1.1 201 Created\r\n\r\n`;
+          }
+        });
       }
     } else {
       response = "HTTP/1.1 404 Not Found\r\n\r\n";
